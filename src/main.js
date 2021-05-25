@@ -80,7 +80,6 @@ function main() {
 
 function authenticate(userId, roomId, callback = undefined) {
   PlayerIO.useSecureApiRequests = true;
-  PlayerIO.useSecureConnections = true;
   console.log("authenticating");
   PlayerIO.authenticate(
     // game id
@@ -106,6 +105,7 @@ function authenticate(userId, roomId, callback = undefined) {
 }
 
 function authenticateSuccess(client, userId, roomId, callback) {
+  client.multiplayer.useSecureConnections = true;
   console.log("creating/joining room");
   client.multiplayer.createJoinRoom(
     // room id

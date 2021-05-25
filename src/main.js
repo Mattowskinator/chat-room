@@ -79,6 +79,8 @@ function main() {
 }
 
 function authenticate(userId, roomId, callback = undefined) {
+  PlayerIO.useSecureApiRequests = true;
+  PlayerIO.useSecureConnections = true;
   console.log("authenticating");
   PlayerIO.authenticate(
     // game id

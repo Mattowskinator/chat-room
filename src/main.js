@@ -28,7 +28,24 @@ class ChatRoom {
             let user = message.getString(0);
             let chatMsg = message.getString(1);
             console.log('[' + user + ']: ' + chatMsg);
-            ChatRoom.receiveCallback(user, chatMsg);
+            ChatRoom.receiveCallback.call(this, user, chatMsg);
+          }
+          break;
+        case 'request-users': {
+            let user = message.getString(0);
+            // if user not self requests user list
+            if (user != ChatRoom.self) {
+              connection.send('introduce', ChatRoom.self);
+            }
+          }
+          break;
+        case 'introduce': {
+            let user = message.getString(0);
+            // if user not self introduced
+            if (user != ChatRoom.self && !ChatRoom.users.has(user)) {
+              ChatRoom.users.set(user, {});
+              console.log(user);
+            }
           }
           break;
         default:
@@ -70,6 +87,35 @@ class ChatRoom {
     this.setReceiveCallback = function(callback) {
       this.receiveCallback = callback;
     }
+
+    this.requestUsers = function() {
+      this.connection.send('request-users', this.self);
+    }
+  }
+
+  static isLetter(code) {
+    if ((code >= 65 && code <= 90) || (code >= 97 && code <= 122)) {
+      return true;
+    }
+    return false;
+  }
+
+  static isDigit(code) {
+    if (code >= 48 && code <= 57) {
+      return true;
+    }
+    return false;
+  }
+
+  static isValidId(string) {
+    let validChars = "_-."
+    for (let letter of string) {
+      let code = letter.charCodeAt(0);
+      if (!validChars.includes(letter) && !this.isLetter(code) && !this.isDigit(code)) {
+        return false;
+      }
+    }
+    return true;
   }
 }
 
@@ -104,7 +150,7 @@ function authenticate(userId, roomId, callback = undefined) {
   );
 }
 
-function authenticateSuccess(client, userId, roomId, callback) {
+function authenticateSuccess(client, userId, roomId, successCallback, errorCallback) {
   client.multiplayer.useSecureConnections = true;
   console.log("creating/joining room");
   client.multiplayer.createJoinRoom(
@@ -130,13 +176,25 @@ function authenticateSuccess(client, userId, roomId, callback) {
         let newElm = ChatRoom.createElement(user, msg);
         ChatRoom.appendElement(newElm);
       });
-      if (callback) {
-        callback.call(this, userId, roomId);
-      }
+      let waitForReady = setInterval(function() {
+        if (ChatRoom.self != undefined) {
+          ChatRoom.requestUsers();
+
+          clearInterval(waitForReady);
+
+          if (successCallback) {
+            successCallback.call(this, userId, roomId);
+          }
+        }
+      }, 100);
+
     },
     // error callback
     function(err) {
       console.error("failed to create/join room");
+      if (errorCallback) {
+        errorCallback.call(this);
+      }
     }
   );
 }

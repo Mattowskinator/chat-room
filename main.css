@@ -73,3 +73,14 @@
   box-sizing: border-box;
   outline-style: none;
 }
+
+.red-outline {
+  outline-style: solid;
+  outline-color: red;
+}
+
+.red-border {
+  border-style: solid;
+  border-color: red;
+  border-width: 2px;
+}

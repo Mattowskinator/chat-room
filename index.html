@@ -17,26 +17,63 @@
       elm.value = '';
     }
     function handleRoom(event) {
-      let roomInput = document.querySelector('#room-id').value;
-      let userInput = document.querySelector('#user-id').value;
+      let roomElm = document.querySelector('#room-id');
+      let roomInput = roomElm.value;
+      let userElm = document.querySelector('#user-id');
+      let userInput = userElm.value;
       if (!roomInput) {
         console.log("require room id");
       } else if (!userInput) {
         console.log("require user id");
       } else {
         let elm = event.target;
+
+        let invalid = false;
+        let roomErr = document.querySelector('#room-id-err');
+        if (!ChatRoom.isValidId(roomInput)) {
+          console.log("invalid room id");
+          roomElm.classList.toggle('red-border', true);
+          roomErr.innerHTML = 'invalid characters (must be a letter, digit, or -_)'
+          invalid = true
+        } else {
+          roomElm.classList.toggle('red-border', false);
+          roomErr.innerHTML = '';
+        }
+
+        let userErr = document.querySelector('#user-id-err');
+        if (!ChatRoom.isValidId(userInput)) {
+          console.log("invalid user id");
+          userElm.classList.toggle('red-border', true);
+          userErr.innerHTML = 'invalid characters (must be a letter, digit, or -_)'
+          invalid = true
+        } else {
+          userElm.classList.toggle('red-border', false);
+          userErr.innerHTML = '';
+        }
+
+        if (invalid) { return; }
+
         elm.classList.add('disabled');
-        authenticate(userInput, roomInput, function(ui, ri) {
-          let parent = document.querySelector('#join-room-container');
-          parent.hidden = true;
-          let inRoom = document.querySelector('#in-room-container');
-          inRoom.hidden = false;
-          let info = document.querySelector('#room-info');
-          let p = info.querySelector('#room-status');
-          p.innerHTML = "Connected to Room(" + ri + ") as [" + ui + "]";
-          let elm = event.target;
-          elm.classList.remove('disabled');
-        });
+        authenticate(userInput, roomInput,
+          function(ui, ri) {
+            let parent = document.querySelector('#join-room-container');
+            parent.hidden = true;
+            let inRoom = document.querySelector('#in-room-container');
+            inRoom.hidden = false;
+            let info = document.querySelector('#room-info');
+            let p = info.querySelector('#room-status');
+            p.innerHTML = "Connected to Room(" + ri + ") as [" + ui + "]";
+            let elm = event.target;
+            elm.classList.remove('disabled');
+            let joinErr = document.querySelector('#join-err');
+            joinErr.innerHTML = '';
+          },
+          function() {
+            elm.classList.remove('disabled');
+            let joinErr = document.querySelector('#join-err');
+            joinErr.innerHTML = 'failed to connect to room';
+          }
+        );
       }
     }
     function handleDisconnect(event) {
@@ -60,9 +97,12 @@
 
     <div class="" style="display: inline-block; vertical-align:top">
       <div id="join-room-container">
-        <input id="room-id" type="text" class="input-text" placeholder="Enter Room ID" /><br>
-        <input id="user-id" type="text" class="input-text" placeholder="Enter User ID" /><br>
+        <input id="room-id" type="text" class="input-text" placeholder="Enter Room ID" />
+        <p id="room-id-err" style="display: inline; color: red"></p><br>
+        <input id="user-id" type="text" class="input-text" placeholder="Enter User ID" />
+        <p id="user-id-err" style="display: inline; color: red"></p><br>
         <div class="button" onclick="handleRoom(event)">Create/Join Room</div>
+        <p id="join-err" style="display: inline; color: red"></p>
       </div>
       <div id="in-room-container" hidden>
         <div class="button" onclick="handleDisconnect()">Disconnect</div>

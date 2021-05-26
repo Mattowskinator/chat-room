@@ -7,8 +7,6 @@
     <script src="lib/PlayerIOClient.minified.js"></script>
     <script src="src/main.js"></script>
     <script type="text/javascript">
-    console.log(window.location.origin, window.location.pathname);
-
     function handleChat(event) {
       if (event.key != 'Enter') { return; }
       if (ChatRoom.connection == undefined) { return; }
@@ -108,9 +106,6 @@
       </div>
       <div id="in-room-container" hidden>
         <div class="button" onclick="handleDisconnect()">Disconnect</div>
-      </div>
-      <div>
-        <a href="sub/sub.html">Sub</a>
       </div>
     </div>
     <div id="room-info" style="padding-left: .2rem; padding-top: .2rem">
